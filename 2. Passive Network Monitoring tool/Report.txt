@@ -1,0 +1,87 @@
+HW2 Report:
+mytcpdump takes the optional arguements and parses them using getopt()
+Priority is given to -r over -i. If -r is present -i is ignored. If there is a error in r, program stops execution with error message. After that it checks for i , if i is not present then opens default device otherwise the specified device. If there is any bpf filter it is compiled and applied.
+It then calls pcap_loop to capture packets.If -s option is specified then only the packets containing that string are printed. Ethernet information, IP information  are printed for protocols TCP, UDP and ICMP. For other protocols it prints OTHER.
+
+
+1. Simple output
+root@indu:/home/indu/Desktop/Sem I/NetSec/Assn/2# ./mydump
+device open for sniffing
+OTHER
+OTHER
+2017-10-13 11:48:08.881889 84:a6:c8:29:1c:9c -> 84:a6:c8:29:1c:9c type 8 len 66
+172.24.19.88:36434 -> 172.24.19.88:443 TCP
+2017-10-13 11:48:08.891260 b8:af:67:63:a3:28 -> b8:af:67:63:a3:28 type 8 len 66
+54.172.146.126:443 -> 54.172.146.126:36434 TCP
+2017-10-13 11:48:16.790033 84:a6:c8:29:1c:9c -> 84:a6:c8:29:1c:9c type 8 len 112
+172.24.19.88:34114 -> 172.24.19.88:443 TCP
+00000  17 03 03 00 29 00 00 00  00 00 00 00 07 70 07 55    ....)........p.U
+00016  e3 00 9e 89 23 d2 1e 46  1e 65 38 09 7f 75 8f 08    ....#..F.e8..u..
+00032  da 34 63 71 c8 5b 5c 68  15 75 b9 b2 22 5b          .4cq.[\h.u.."[
+2017-10-13 11:48:16.793883 b8:af:67:63:a3:28 -> b8:af:67:63:a3:28 type 8 len 112
+172.217.12.142:443 -> 172.217.12.142:34114 TCP
+00000  17 03 03 00 29 00 00 00  00 00 00 00 09 8a 92 c3    ....)...........
+00016  de 6f 60 11 45 ea 44 b7  9b 30 18 aa 57 1d 98 1f    .o`.E.D..0..W...
+00032  96 ce 80 aa fb 73 26 dd  1a 4e ab 80 ba 26          .....s&..N...&
+2017-10-13 11:48:16.793952 84:a6:c8:29:1c:9c -> 84:a6:c8:29:1c:9c type 8 len 66
+172.24.19.88:34114 -> 172.24.19.88:443 TCP
+2017-10-13 11:48:18.897885 84:a6:c8:29:1c:9c -> 84:a6:c8:29:1c:9c type 8 len 66
+172.24.19.88:36434 -> 172.24.19.88:443 TCP
+2017-10-13 11:48:18.907089 b8:af:67:63:a3:28 -> b8:af:67:63:a3:28 type 8 len 66
+54.172.146.126:443 -> 54.172.146.126:36434 TCP
+2017-10-13 11:48:22.202315 84:a6:c8:29:1c:9c -> 84:a6:c8:29:1c:9c type 8 len 84
+172.24.19.88:38782 -> 172.24.19.88:53 UDP
+00000  ab 7f 01 00 00 01 00 00  00 00 00 00 0d 6e 6f 74    .............not
+00016  69 66 69 63 61 74 69 6f  6e 73 06 67 6f 6f 67 6c    ifications.googl
+00032  65 03 63 6f 6d 00 00 01  00 01                      e.com.....
+2017-10-13 11:48:22.202379 84:a6:c8:29:1c:9c -> 84:a6:c8:29:1c:9c type 8 len 84
+172.24.19.88:38782 -> 172.24.19.88:53 UDP
+00000  9a 55 01 00 00 01 00 00  00 00 00 00 0d 6e 6f 74    .U...........not
+00016  69 66 69 63 61 74 69 6f  6e 73 06 67 6f 6f 67 6c    ifications.googl
+00032  65 03 63 6f 6d 00 00 1c  00 01                      e.com.....
+
+
+2. -r
+root@indu:/home/indu/Desktop/Sem I/NetSec/Assn/2# ./mydump -r hw1.pcap| head -20
+OTHER
+2013-01-12 11:38:02.227995 c4:3d:c7:17:6f:9b -> c4:3d:c7:17:6f:9b type 8 len 342
+192.168.0.1:1901 -> 192.168.0.1:1900 UDP
+00000  4e 4f 54 49 46 59 20 2a  20 48 54 54 50 2f 31 2e    NOTIFY * HTTP/1.
+00016  31 0d 0a 48 4f 53 54 3a  20 32 33 39 2e 32 35 35    1..HOST: 239.255
+00032  2e 32 35 35 2e 32 35 30  3a 31 39 30 30 0d 0a 43    .255.250:1900..C
+00048  61 63 68 65 2d 43 6f 6e  74 72 6f 6c 3a 20 6d 61    ache-Control: ma
+00064  78 2d 61 67 65 3d 33 36  30 30 0d 0a 4c 6f 63 61    x-age=3600..Loca
+00080  74 69 6f 6e 3a 20 68 74  74 70 3a 2f 2f 31 39 32    tion: http://192
+00096  2e 31 36 38 2e 30 2e 31  3a 38 30 2f 52 6f 6f 74    .168.0.1:80/Root
+00112  44 65 76 69 63 65 2e 78  6d 6c 0d 0a 4e 54 3a 20    Device.xml..NT: 
+00128  75 75 69 64 3a 75 70 6e  70 2d 49 6e 74 65 72 6e    uuid:upnp-Intern
+00144  65 74 47 61 74 65 77 61  79 44 65 76 69 63 65 2d    etGatewayDevice-
+00160  31 5f 30 2d 63 34 33 64  63 37 31 37 36 66 39 62    1_0-c43dc7176f9b
+00176  0d 0a 55 53 4e 3a 20 75  75 69 64 3a 75 70 6e 70    ..USN: uuid:upnp
+00192  2d 49 6e 74 65 72 6e 65  74 47 61 74 65 77 61 79    -InternetGateway
+00208  44 65 76 69 63 65 2d 31  5f 30 2d 63 34 33 64 63    Device-1_0-c43dc
+00224  37 31 37 36 66 39 62 0d  0a 4e 54 53 3a 20 73 73    7176f9b..NTS: ss
+00240  64 70 3a 61 6c 69 76 65  0d 0a 53 65 72 76 65 72    dp:alive..Server
+00256  3a 20 55 50 6e 50 2f 31  2e 30 20 55 50 6e 50 2f    : UPnP/1.0 UPnP/
+
+3. using filter
+1.234.31.20:55672 -> 1.234.31.20:80 TCP
+00000  47 45 54 20 2f 4d 79 41  64 6d 69 6e 2f 73 63 72    GET /MyAdmin/scr
+00016  69 70 74 73 2f 73 65 74  75 70 2e 70 68 70 20 48    ipts/setup.php H
+00032  54 54 50 2f 31 2e 31 0d  0a 41 63 63 65 70 74 3a    TTP/1.1..Accept:
+00048  20 2a 2f 2a 0d 0a 41 63  63 65 70 74 2d 4c 61 6e     */*..Accept-Lan
+00064  67 75 61 67 65 3a 20 65  6e 2d 75 73 0d 0a 41 63    guage: en-us..Ac
+00080  63 65 70 74 2d 45 6e 63  6f 64 69 6e 67 3a 20 67    cept-Encoding: g
+00096  7a 69 70 2c 20 64 65 66  6c 61 74 65 0d 0a 55 73    zip, deflate..Us
+00112  65 72 2d 41 67 65 6e 74  3a 20 5a 6d 45 75 0d 0a    er-Agent: ZmEu..
+00128  48 6f 73 74 3a 20 38 36  2e 30 2e 33 33 2e 32 30    Host: 86.0.33.20
+00144  0d 0a 43 6f 6e 6e 65 63  74 69 6f 6e 3a 20 43 6c    ..Connection: Cl
+00160  6f 73 65 0d 0a 0d 0a                                ose....
+
+
+References
+http://www.tcpdump.org/pcap.html
+http://tonylukasavage.com/blog/2010/12/19/offline-packet-capture-analysis-with-c-c----amp--libpcap/
+https://www.gnu.org/software/libc/manual/html_node/Example-of-Getopt.html#Example-of-Getopt
+https://stackoverflow.com/
+

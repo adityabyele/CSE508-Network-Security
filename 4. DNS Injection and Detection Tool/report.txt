@@ -1,0 +1,158 @@
+Report:
+install packages:
+install python 2.7.12
+scapy 2.3.2
+	1. download and unzip scapy 2.3.2 from
+	2. run command python setup.py install
+dnsinject:
+1. How to compile:
+	command line:
+	1. Enter root
+	2. Type below command:
+		python dnsinject.py
+		options
+			-i to select interface
+			-h path to files containing host ip pairs
+			bpf filter
+2. Working examples:
+	python dnsinject.py
+	python dnsinject.py -h ./hostfile
+	python dnsinject.py -h ./hostfile -i enp0s3
+	python dnsinject.py -i enp0s3
+	python dnsinject.py -h ./hostfile -i enp0s3 udp port 53
+
+3. Design
+	1. dns inject sniffs traffic in promiscus mode on the given interface
+	2. It loads the hostfile into a hashmap(python dictionary) with hostname as key and ip address as value. This assumes there will be 		one spoof ip address per hostname.
+	3. If packet found on network then it checks if it has a DNS layer, it has a Question record and query type is 0
+	4. Then get the malicious ip corressponding to the domain name from the hash table and if host file not specified get the attackers ip 		address.
+	5. Create a new DNS packet by swapping source and destination IP addresses, ports from captured packet. Create a DNS RR in that, keep 		the transaction id same as captured packet.Set the qr record as 1 indicating an answer
+	6. Send the packet.
+	7. Sniffing, capturing, Forging and sending the packet is done using scapy
+
+4. OS version and language
+	1. OS version
+		Distributor ID:	Ubuntu
+		Description:	Ubuntu 16.04.1 LTS
+		Release:	16.04
+		Codename:	xenial
+		Linux 4.4.0-103-generic x86_64
+	2. Python 2.7.12
+	   scapy 2.3.2
+dnsdetect
+1. How to compile
+		command line:
+	1. Enter root
+	2. Type below command:
+		python dnsdetect.py
+		options
+			-i to select interface
+			-r path to pcap file
+			bpf filter
+2. Working examples
+	python dnsdetect.py
+	python dnsdetect.py -r test.pcap
+	python dnsdetect.py -r test.pcap udp dst port 53
+3. Design 
+	1. dns detect sniffs traffic in promiscus mode on the given interface
+	2. If packet found on network then it checks if it has a DNS layer, it has a answer record and query type is 1,  ancount is greater 		than one
+	3. We maintain a hash table where we store the transaction id as the key. When we receive a packet chek if that transaction id exists 		in the hash table  if it is not present add the hostname and all the ip addressses in  the packet to the hash table. There will be a 		new record for each unique transaction id(if it is not already present).
+	4. If a record is already present for that transaction id we compare the all the ip addresses of the record , with all the ip 		addresses of the captured packet.If even one matches then it is considered authentic. If none match then print an alert.
+4. Handling False positives
+	Since the response formt the authentic DNS server contains IP addresses of all the servers then comparing every ip address from stored 		and destination packets will prevent false positives.(Point 4 above section)
+5. OS version and language
+	1. OS version
+		Distributor ID:	Ubuntu
+		Description:	Ubuntu 16.04.1 LTS
+		Release:	16.04
+		Codename:	xenial
+		Linux 4.4.0-103-generic x86_64
+	2. Python 2.7.12
+	   scapy 2.3.2
+
+Testing conditions:
+Two VM on virtual box 
+VM1 = ubuntu 16.04
+VM2 = ubuntu 16.04
+
+Host operating system
+Windows 8
+
+Spoofed ip address observed through using dig command.
+Pcap trac file output
+root@host1:/home/host1/Desktop# python dnsdetect.py -r test.pcap
+WARNING: No route found for IPv6 destination :: (no default route?)
+--------------------------------------------------------------
+2017-12-10 23:30:47.821774 DNS Poisoning attempt
+TXID 64165 Request yandex.com.
+Answer1 ['10.6.6.6']
+Answer2 ['213.180.204.62']
+--------------------------------------------------------------
+--------------------------------------------------------------
+2017-12-10 23:30:47.824089 DNS Poisoning attempt
+TXID 64165 Request yandex.com.
+Answer1 ['10.6.6.6']
+Answer2 ['213.180.204.62']
+--------------------------------------------------------------
+
+Test general example:
+Host file
+10.6.6.6 yandex.com
+151.101.129.69 stackoverflow.com
+10.6.6.6 bar.example.com
+192.168.66.6 www.cs.stonybrook.edu
+
+Run dnsinject on host1
+root@host1:/home/host1/Desktop# python dnsinject.py -h ./hostfile
+WARNING: No route found for IPv6 destination :: (no default route?)
+
+Run dnsdetect  on host1
+root@host1:/home/host1/Desktop# python dnsdetect.py
+
+Run dig on host2
+root@host1:/home/host1/Desktop# python dnsinject.py -h ./hostfile
+WARNING: No route found for IPv6 destination :: (no default route?)
+
+dnsdetect output:
+root@host1:/home/host1/Desktop# python dnsdetect.py
+WARNING: No route found for IPv6 destination :: (no default route?)
+--------------------------------------------------------------
+2017-12-10 23:36:57.739056 DNS Poisoning attempt
+TXID 50692 Request yandex.com.
+Answer1 ['10.6.6.6']
+Answer2 ['213.180.204.62']
+--------------------------------------------------------------
+--------------------------------------------------------------
+2017-12-10 23:36:57.747597 DNS Poisoning attempt
+TXID 50692 Request yandex.com.
+Answer1 ['10.6.6.6']
+Answer2 ['213.180.204.62']
+--------------------------------------------------------------
+
+host2 dig command output:
+root@host2:/home/host2# /etc/init.d/dns-clean restart
+root@host2:/home/host2# dig @109.69.8.51  yandex.com
+
+; <<>> DiG 9.10.3-P4-Ubuntu <<>> @109.69.8.51 yandex.com
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 32734
+;; flags: qr; QUERY: 0, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0
+
+;; ANSWER SECTION:
+yandex.com.		0	IN	A	10.6.6.6
+
+;; Query time: 31 msec
+;; SERVER: 109.69.8.51#53(109.69.8.51)
+;; WHEN: Sun Dec 10 23:33:36 EST 2017
+;; MSG SIZE  rcvd: 38
+
+
+
+References:
+https://docs.python.org/3/library/argparse.html
+http://code.activestate.com/recipes/439094-get-the-ip-address-associated-with-a-network-inter/
+http://www.secdev.org/projects/scapy/files/scapydoc.pdf
+https://thepacketgeek.com/scapy-p-09-scapy-and-dns/
+https://null-byte.wonderhowto.com/how-to/build-dns-packet-sniffer-with-scapy-and-python-0163601/

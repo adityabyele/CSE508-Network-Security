@@ -1,0 +1,49 @@
+Report
+
+Test environment:
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 16.04.3 LTS
+Release:	16.04
+Codename:	xenial
+
+Linux 4.4.0-98-generic x86_64
+
+Compiler version:
+gcc (Ubuntu 5.4.0-6ubuntu1~16.04.4) 5.4.0 20160609
+
+How to run:
+Compile:
+make
+
+Start server:
+./pbproxy -l 2299 -k mykey 127.0.0.1 22
+
+Client side:
+ssh -o "ProxyCommand ./pbproxy -k mykey 127.0.0.1 2299" localhost
+
+
+Input should be in the for of ip address
+
+supports ipv4/-
+need ip address //ad converter
+end character END
+
+Design:
+Accepts input from command line.
+Checks the options if -l is present then calls the server(reverse mode) else calls the client function.
+
+Server(Pbproxy in reverse mode) :
+Server listens on the port specified. After accepting the connection it generates the ivs. These are passed along with other connection to a thread
+which connects with the server(eg. ssh). This thread then spawns two new threads which pass messages between client and server after encryption/decryption as required.
+After the client program terminates the pbrproxy remains open to connect with other clients.It can also server multiple clients at once.
+
+Client:
+Client sends a request to connect. After connection reads the ivs sent by server. spawns a thread which reads data from pbr server decrypts it and writes to stdout.
+The main client function continues to read from stdin , encrypt and send to pbr server.
+
+References:
+http://www.binarytides.com/socket-programming-c-linux-tutorial/
+https://stackoverflow.com/questions/3141860/aes-ctr-256-encryption-mode-of-operation-on-openssl
+https://stackoverflow.com/questions/38255433/parameter-details-of-openssls-aes-ctr128-encrypt
+https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption
