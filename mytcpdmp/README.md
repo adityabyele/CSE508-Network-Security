@@ -12,14 +12,13 @@
 ./mydump
 
 
--i&nbsp;&nbsp;&nbsp;Live capture from the network device <interface>. If not specified,  automatically selects a default interface to &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;listen. Capture continues indefinitely until the user terminates the program.
+-i&nbsp;&nbsp;&nbsp;Live capture from the network device <interface>. If not specified,  automatically selects a default interface to listen. Capture continues indefinitely until the user terminates the program.
 
 -r&nbsp;&nbsp;&nbsp;read packets from <pcap trace file\>.
 
 -s&nbsp;&nbsp;&nbsp;Keep only packets that contain <string> in their payload (after any BPF filter is applied).
 
-<expression\> is a BPF filter that specifies which packets will be dumped. If no filter is given, all packets seen on the interface (or contained in the
-trace) are dumped. Otherwise, only packets matching <expression> are dumped.
+<expression\> is a BPF filter that specifies which packets will be dumped. If no filter is given, all packets seen on the interface (or contained in the trace) are dumped. Otherwise, only packets matching <expression> are dumped.
 
 Priority is given to -r over -i. If -r is present -i is ignored. If there is a error in r, program stops execution with error message. After that it checks for -i , if -i is not present then opens default device otherwise the specified device.
 
