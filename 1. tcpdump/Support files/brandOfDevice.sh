@@ -1,3 +1,0 @@
-tcpdump -n -r hw1.pcap -e| grep -o -e '[[:alnum:]]\{2\}:[[:alnum:]]\{2\}:[[:alnum:]]\{2\}:[[:alnum:]]\{2\}:[[:alnum:]]\{2\}:[[:alnum:]]\{2\} >'|awk -F " " '{$1=$1;print $1}'|sort|uniq -c| sort -nr|head -1|awk '{print $2}'|awk -F ":" '{print $1 "-" $2 "-" $3}'|grep -if - OUIToBrand.txt
-export macAddr=`tcpdump -n -r hw1.pcap -e| grep -o -e '[[:alnum:]]\{2\}:[[:alnum:]]\{2\}:[[:alnum:]]\{2\}:[[:alnum:]]\{2\}:[[:alnum:]]\{2\}:[[:alnum:]]\{2\} >'|awk -F " " '{$1=$1;print $1}'|sort|uniq -c| sort -nr|head -1|awk -F " " '{print $2}'`
-tcpdump -n -r hw1.pcap arp|grep -e $macAddr|grep -Eo "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"|head -1
